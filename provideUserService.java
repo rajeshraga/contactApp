@@ -58,7 +58,7 @@ public class provideUserService extends loadMessageBean {
 			//existing session for this user
 			System.out.println("existing session " +session.getId());
 			HashMap<Integer, UserInfoData> mapEx = (HashMap<Integer, UserInfoData>)session.getAttribute("mapUsr");
-			
+		
 			if(mapEx == null) {
 				System.out.println("session map attribute is empty");
 				HashMap<Integer, UserInfoData> mapUser = new HashMap<>();	
@@ -120,8 +120,7 @@ public class provideUserService extends loadMessageBean {
 		else {
 			iCount = mapEx.size();
 			System.out.println("Session Map count here " +iCount);
-			Integer iCnt = iCount +1;
-			mapEx.put(iCnt, data);
+			mapEx.put(Integer.parseInt(data.getUid()), data);
 			
 			session.setAttribute("mapUsr", mapEx);
 		}
@@ -151,6 +150,10 @@ public class provideUserService extends loadMessageBean {
 		HashMap<Integer, UserInfoData> mapEx = (HashMap<Integer, UserInfoData>)session.getAttribute("mapUsr");
 		
 		mapEx.remove(delList);
+		
+		//Now update the session object
+		session.setAttribute("mapUsr", mapEx);
+		
 		
 	}
 

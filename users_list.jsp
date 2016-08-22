@@ -37,7 +37,7 @@ $(document).ready(function(){
 </script>
 
 <s:form action="welcome" id="usertable" label="User details">
-	<table border="10"  cellspacing="10" cellpadding="10"  >
+	<table border="5" >
 		<tr>		
 					<td><b>Delete Option</b></td>
 					<td><b>User ID</b></td>
@@ -49,9 +49,13 @@ $(document).ready(function(){
                     <td><b>City</b></td>
                     <td><b>State</b></td>
                     <td><b>Zip</b></td>
+                    <td><b>Update</b></td>
         </tr>
 		
 		<s:iterator value="userdata" var="user" status="rowstatus">
+			<s:url action="update" var="updateUrl">
+			<s:param name="uid" value="%{#user.uid}"></s:param>
+			</s:url>
 		<tr>
 		 	<td> <s:checkbox id="userchk" theme="simple" name="delUserList" fieldValue="%{#user.uid}" value="%{#user.uid}"></s:checkbox></td>
 		 	<td><s:property value="#user.uid"/></td>
@@ -63,7 +67,9 @@ $(document).ready(function(){
 			<td><s:property value="#user.city"/></td>
 			<td><s:property value="#user.state"/></td>
 			<td><s:property value="#user.zip"/></td>
-			<td><s:a action="update" value="Update" href="Update" ><s:param name="uid" value="#user.uid"> </s:param></s:a> </td>
+			<td><s:a label="Update" href="%{updateUrl}"  errorText="Sorry your request had an error." preInvokeJS="confirm('Are you sure you want to delete this item?')">
+			<s:label >Update</s:label>
+			</s:a></td>
 		 </tr>
 		</s:iterator>
 		<s:submit id="userdel" action="delete" ></s:submit>
