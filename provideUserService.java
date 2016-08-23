@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
+import org.apache.struts2.ServletActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -145,16 +146,47 @@ public class provideUserService extends loadMessageBean {
 		
 	}
 	
-	public void deleteUsersFromList(HttpServletRequest request, int delList) {
+	public void deleteUsersFromList(HttpServletRequest request, List<String> delList) {
 		HttpSession session= request.getSession();
 		HashMap<Integer, UserInfoData> mapEx = (HashMap<Integer, UserInfoData>)session.getAttribute("mapUsr");
 		
-		mapEx.remove(delList);
+		if(!delList.isEmpty()) {
+			for(String s : delList) {
+				if(s!= null && !s.trim().equalsIgnoreCase(""))
+					mapEx.remove(Integer.parseInt(s));
+			}		
+			
+		}
 		
 		//Now update the session object
 		session.setAttribute("mapUsr", mapEx);
 		
 		
+	}
+	
+	public boolean updateUser(UserInfoData updatedData, HttpServletRequest request) throws Exception {
+		System.out.println("inside update user function");
+		
+				
+		if(updatedData != null) {
+			
+			try {
+				HttpSession session = request.getSession();
+				HashMap<Integer, UserInfoData> mapEx = (HashMap<Integer, UserInfoData>)session.getAttribute("mapUsr");
+				mapEx.remove(Integer.parseInt(updatedData.getUid()));
+				mapEx.put(Integer.parseInt(updatedData.getUid()),updatedData);
+				
+				session.setAttribute("mapUsr", mapEx);
+			}
+			catch(Exception ex) {
+				return false;
+			}
+			
+			
+		
+		}
+		
+		return true;
 	}
 
 }
