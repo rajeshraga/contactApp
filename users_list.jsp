@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
-    <%@taglib uri="/struts-tags" prefix="s" %>
+    <%@taglib uri="/struts-tags" prefix="s"%>
     <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -11,35 +11,101 @@
 <body>
 
 <script type="text/javascript">
-$(document).ready(function(){
-	
-	
-	$("#userdel").click(function(){
-		var cnf = confirm("are you sure you want to delete the user records?");
-		
-		if(cnf) {
-			var checkb = document.getElementById('userchk').value;
-		 	confirm(checkb);
-	 		$.ajax({
-				 type: 'POST',
-		         url: 'delete.action?uid='+checkb,		                    
-                 dataType: "text",
-                 contentType: 'text/plain',
-                 success: function(data){
-                     console.log(data);
-                         
-                         }                     
-             });  
+
+/*var getelements = function() {
+	var array = new Array[row];
+	var count = -1;
+	for(i = 0; i < row; i++ ) {
+		//check the options selected by the user
+		console.log("iteration" + i);
+		if(document.getElementById('userchk['+ i +']').checked) {
+			console.log('inside checked');
+			count++;
+			var uid = document.getElementById('userchk['+ i +']').value;
+			confirm(uid);
+			array[count] = uid; 
 		}
+	}
+	console.log(array);
+}
+
+			$("#select_all").change(function(){
+           if(this.checked){
+           $(":checkbox").each(function(){
+               this.checked=true;
+           });             
+       }else{
+           $(":checkbox").each(function(){
+               this.checked=false;
+           });              
+       }
+   });
+ 
+ 	$(":checkbox").click(function () {
+        if (!$(this).is(":checked")){
+            $("#select_all").prop("checked", false);
+        }else{
+            var flag = 0;
+            $(":checkbox").each(function(){
+                if(!this.checked)
+                flag=1;
+            });              
+            if(flag == 0){ 
+            	$("#select_all").prop("checked", true);
+            }
+        }
+    	});	
 	
-	});
+	    //Validate if all checkbox is checked	
+		var allChecked = $(':checkbox:checked').length == $(':checkbox').length - 1;
+		if (allChecked) {
+			$("#select_all").prop("checked", true);
+		} else {
+			$("#select_all").prop("checked", false);
+		}
+	}); */
+
+$(document).ready(function() {
+		
+	 var allVals = [];	
+	
+	$("#usertable").submit(function(event){
+	
+			var cnf = confirm("are you sure you want to delete the user records?");
+			if(cnf) {
+		 		allVals = [];
+		 		$("#usertable :checked").each(function(){
+		 			allVals.push($(this).val());
+			 			
+		 		});
+		 		
+		 			$.ajax({
+					 type: 'POST',
+			         url: 'delete.action',	
+			         data: "allVals=" + allVals,
+	                 success: function(data){
+	                    	 console.log(data);
+	                     },
+	                  error: function(data){
+	                  		console.log(data);
+	                  }                        
+	             	});
+			}
+			
+	
+		
+	});	
 });
 </script>
 
 <s:form action="welcome" id="usertable" label="User details">
+
+	<s:a href='welcome?newUser=yes'>
+	<s:label>Add New User</s:label>
+	</s:a>
 	<table border="5" >
 		<tr>		
-					<td><b>Delete Option</b></td>
+					<td>Select to Delete</td>
 					<td><b>User ID</b></td>
                     <td><b>First Name</b></td>
                     <td><b>Last Name</b></td>
@@ -53,11 +119,13 @@ $(document).ready(function(){
         </tr>
 		
 		<s:iterator value="userdata" var="user" status="rowstatus">
+		
 			<s:url action="update" var="updateUrl">
 			<s:param name="uid" value="%{#user.uid}"></s:param>
 			</s:url>
 		<tr>
-		 	<td> <s:checkbox id="userchk" theme="simple" name="delUserList" fieldValue="%{#user.uid}" value="%{#user.uid}"></s:checkbox></td>
+		<!-- --userchk[%{#rowstatus.index}] -->
+		 	<td> <s:checkbox cssClass="checkb" id="userchkList[%{#rowstatus.index}]" theme="simple" name="userchkList[%{#rowstatus.index}]" fieldValue="%{#user.uid}" value="%{#user.uid}"  ></s:checkbox></td>
 		 	<td><s:property value="#user.uid"/></td>
 			<td><s:property value="#user.fname"/></td>
 			<td><s:property value="#user.lname"/></td>
@@ -72,8 +140,12 @@ $(document).ready(function(){
 			</s:a></td>
 		 </tr>
 		</s:iterator>
-		<s:submit id="userdel" action="delete" ></s:submit>
+		
+		<s:submit id="userdel" src="/contactApp/image/b_delete.gif" type="image"  ></s:submit>		 
+		
+		
 	</table>
 </s:form>
+
 </body>
 </html>
