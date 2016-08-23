@@ -7,8 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>Login Information</title>
 <script type="text/javascript">
-	var uid = document.getElementById('uid').value;
-	var pwd = document.getElementById('pwd').value;
+
 	
 </script>
 </head>
