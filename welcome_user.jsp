@@ -12,37 +12,36 @@
 	
 	
 	
-<s:form action="adduser" validate="true" >
+<s:form action="adduser" validate="true" id="userTable" >
 
-  <s:hidden id="flag" key="flag"></s:hidden>
   <h1>Hello ${username}</h1>
 			<table id="userInfo">
 				<tr>
-					<td><s:textfield label="UserID" id="uid" key="uid"/><br /></td>
+					<td><s:textfield label="UserID" id="uid" class="usr" key="uid"/><br /></td>
 				</tr>
 				<tr>
-					<td><s:textfield label="First Name" id="fname" key="fname"/><br /></td>
+					<td><s:textfield label="First Name" id="fname" class="usr" key="fname"/><br /></td>
 				</tr>
 				<tr>
-					<td><s:textfield label="Last Name" id="lname" key="lname"/><br /></td>
+					<td><s:textfield label="Last Name" id="lname" class="usr" key="lname"/><br /></td>
 				</tr>
 				<tr>
-					<td><s:textfield label="Date of Birth" id="dob" key="dob"/><br /></td>
+					<td><s:textfield  key="dob" class="usr" id="dob" label="Date of Birth"/><br /></td>
 				</tr>
 				<tr>
-					<td><s:textfield label="SSN" id="ssn" key="ssn"/><br /></td>
+					<td><s:textfield label="SSN" id="ssn" class="usr" key="ssn"/><br /></td>
 				</tr>
 				<tr>
-					<td><s:textfield label="Street Name" id="street" key="street"/><br /></td>
+					<td><s:textfield label="Street Name" id="street" class="usr" key="street"/><br /></td>
 				</tr>
 				<tr>
-					<td><s:textfield label="City Name" id="city" key="city"/><br /></td>
+					<td><s:textfield label="City Name" id="city" class="usr" key="city"/><br /></td>
 				</tr>
 				<tr>
-					<td><s:textfield label="State" id="state" key="state"/><br /></td>
+					<td><s:textfield label="State" id="state" class="usr" key="state"/><br /></td>
 				</tr>
 				<tr>
-					<td><s:textfield label="Zip" id="zip" key="zip"/><br /></td>
+					<td><s:textfield label="Zip" id="zip" class="usr" key="zip"/><br /></td>
 				</tr>
 				
 				<s:submit id="submit"/>
@@ -59,12 +58,20 @@
 $(document).ready(function(){
 	
 	
-	$("form").submit(function(){
-		if(!validateform())
-			$("#flag").attr("value",'false');
-		else
-			$("#flag").attr("value",'true');
+	$("form").submit(function(event){
+		if(!validateform()){
 		
+			$('#submit').attr('disabled',true);
+			event.preventDefault();
+			return false;
+		}
+		
+	});
+	
+	$(".usr").change(function(){
+		
+		$('#submit').removeAttr('disabled');
+		$(".error").remove();
 	});
 	
 	function validateform() {
