@@ -111,12 +111,7 @@ public class AddUserAction {
 			HttpSession session = request.getSession(false);
 			System.out.println(getFname() + ' ' + getFlag());
 			HashMap<Integer, UserInfoData> mapEx  = null;
-			if(session != null ) {
-				mapEx = (HashMap<Integer, UserInfoData>)session.getAttribute("mapUsr");
-				if(mapEx.isEmpty() && getFlag().equalsIgnoreCase(this.FALSE))
-					return "error";
 				
-			}			
 			UserInfoData usrData = getUserObj(getUid(),getFname(),getLname(),getDob(),getSsn(),getStreet(),getCity(),getState(),getZip());
 			WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(ServletActionContext.getServletContext());
 			provideUserService UsrService = (provideUserService)context.getBean("provideUserService");
