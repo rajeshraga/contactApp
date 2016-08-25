@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
-    <%@taglib uri="/struts-tags" prefix="s"%>
+    <%@taglib uri="/struts-tags" prefix="s" %>
     <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -100,7 +100,11 @@ $(document).ready(function() {
 
 <s:form action="welcome" id="usertable" label="User details">
 
-	<s:a href='welcome?newUser=yes'>
+	<s:url action="welcome" var="addNewUser" includeParams="true">
+	<s:param name="newUser">yes</s:param>
+	</s:url>
+	
+	<s:a href="%{addNewUser}">	
 	<s:label>Add New User</s:label>
 	</s:a>
 	<table border="5" >
@@ -141,7 +145,7 @@ $(document).ready(function() {
 		 </tr>
 		</s:iterator>
 		
-		<s:submit id="userdel" src="/contactApp/image/b_delete.gif" type="image"  ></s:submit>		 
+		<s:submit id="userdel" ></s:submit>		 
 		
 		
 	</table>
