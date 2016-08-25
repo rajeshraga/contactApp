@@ -28,63 +28,120 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
-import org.apache.struts2.ServletActionContext;
+
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpRequest;
 
+import com.contactApp.action.DeleteUserAction;
 import com.contactApp.action.UserInfoData;
 
 public class provideUserService extends loadMessageBean {
 	
 	@Autowired HttpSession session;
 	
+	private static Logger log;
+	private static HashMap<String, String> authmap;
+	static {
+		log = LogManager.getLogger(provideUserService.class.getName());
+		 authmap = getAuthUserInfo();
+	}
+	
 	public provideUserService() {
 		
 	}
-	public boolean getAuthUsers(String userid, String password, HttpServletRequest request) {
+	public boolean getAuthUserId(String userid) {
 		
-		HttpSession session= request.getSession();
-		if(session.isNew()) {
-			//this is a new session 
-			if(userid == null || password == null ) return false;
-			System.out.println("new session " +session.getId());
-			//session.setAttribute(arg0, arg1);
-			HashMap<Integer, UserInfoData> mapUser = new HashMap<>();
-			session.setAttribute("mapUsr", mapUser);
-			
-		}
-		else {
-			//existing session for this user
-			System.out.println("existing session " +session.getId());
-			HashMap<Integer, UserInfoData> mapEx = (HashMap<Integer, UserInfoData>)session.getAttribute("mapUsr");
-		
-			if(mapEx == null) {
-				System.out.println("session map attribute is empty");
-				HashMap<Integer, UserInfoData> mapUser = new HashMap<>();	
-				session.setAttribute("mapUsr", mapUser);
-				
-			}
-			return true;
-		}
-		HashMap<String, String> authmap = getAuthUserInfo();
 		if(authmap != null) {
-			if((authmap.get("u1").equalsIgnoreCase(userid.trim()) || authmap.get("u2").equalsIgnoreCase(userid.trim())) &&
-				(authmap.get("p1").equalsIgnoreCase(password.trim()) || authmap.get("p2").equalsIgnoreCase(password.trim())))
+			if(authmap.get("u1").equalsIgnoreCase(userid.trim()) || authmap.get("u2").equalsIgnoreCase(userid.trim())) {
+				
+				log.debug("userID is authenticated");
 				return true;
 			
-		}
+			}
+			else {
+				log.error("userID is not authenticated, so returning false");
+				return false;
+			}
 		
-		return false;
+		}
+		else {
+			log.debug("Authentication failure, issue here " );
+			return false;
+		}
+				
 	}
 	
-	public HashMap<String, String> getAuthUserInfo() {
+	public boolean getAuthPassword(String password) {
+		
+		if(authmap != null) {
+			if(authmap.get("p1").equalsIgnoreCase(password.trim()) || authmap.get("p2").equalsIgnoreCase(password.trim())) {
+				
+				log.debug("password is authenticated");
+				return true;
+			
+			}
+			else {
+				log.error("password is not authenticated, so returning false");
+				return false;
+			}
+		
+		}
+		else {
+			log.debug("Authentication failure, issue here " );
+			return false;
+		}
+				
+	}
+		
+	public boolean getSessionInfo(String userid, String password, HttpServletRequest request) {
+		
+		HttpSession session= request.getSession();
+		
+		try {
+				if(session.isNew()) {
+					//this is a new session 
+					if(userid == null || password == null ) return false;
+					log.debug("new session " +session.getId());
+					//session.setAttribute(arg0, arg1);
+					HashMap<Integer, UserInfoData> mapUser = new HashMap<>();
+					session.setAttribute("mapUsr", mapUser);
+					
+				}
+				else {
+					//existing session for this user
+					log.debug("existing session " +session.getId());
+					HashMap<Integer, UserInfoData> mapEx = (HashMap<Integer, UserInfoData>)session.getAttribute("mapUsr");
+				
+					if(mapEx == null) {
+						log.debug("session map attribute is empty, so setting the new Map attribute and returning that the user is authenticated");
+						HashMap<Integer, UserInfoData> mapUser = new HashMap<>();	
+						session.setAttribute("mapUsr", mapUser);
+						
+					}
+					
+				}
+		}
+		catch(Exception ex) {
+			log.error("exception in setting up session object in getSessionInfo() " +ex);
+			return false;
+		}
+		
+		
+		return true;
+		
+	}
+	
+	public static HashMap<String, String> getAuthUserInfo() {
 		Properties prop = new Properties();
 		InputStream input = null;
 		input = loadMessageBean.class.getClassLoader().getResourceAsStream("authconfig.properties");
 		if(input == null) {
-			System.out.println("unable to find file authconfig.properties");
+			log.error("unable to find file authconfig.properties");
 			return null;
 		}
 		
@@ -92,6 +149,7 @@ public class provideUserService extends loadMessageBean {
 			prop.load(input);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
+			log.error("error loading property file" + input);
 			e.printStackTrace();
 		}
 		//System.out.println(prop.getProperty("dbuser1"));
@@ -100,11 +158,6 @@ public class provideUserService extends loadMessageBean {
 		authuser.put("u2", prop.getProperty("dbuser2"));
 		authuser.put("p1", prop.getProperty("dbpassword1"));
 		authuser.put("p2", prop.getProperty("dbpassword2"));
-		
-	/*	System.out.println( prop.getProperty("dbuser1"));
-		System.out.println( prop.getProperty("dbuser2"));
-		System.out.println( prop.getProperty("dbpassword1"));
-		System.out.println( prop.getProperty("dbpassword2"));*/
 		
 		return authuser;
 		
@@ -115,15 +168,18 @@ public class provideUserService extends loadMessageBean {
 		HttpSession session= request.getSession();
 		HashMap<Integer, UserInfoData> mapEx = (HashMap<Integer, UserInfoData>)session.getAttribute("mapUsr");
 		int iCount = 0;
-		if(mapEx == null){
-			System.out.println("this should not be the case");
+		try {
+			if(mapEx != null){
+				iCount = mapEx.size();
+				log.debug("Session Map count here " +iCount);
+				mapEx.put(Integer.parseInt(data.getUid()), data);
+				
+				session.setAttribute("mapUsr", mapEx);
+			}
 		}
-		else {
-			iCount = mapEx.size();
-			System.out.println("Session Map count here " +iCount);
-			mapEx.put(Integer.parseInt(data.getUid()), data);
+		catch(Exception ex) {
+			log.error("error in addUserInfo() " +ex);
 			
-			session.setAttribute("mapUsr", mapEx);
 		}
 		
 	}
@@ -135,13 +191,18 @@ public class provideUserService extends loadMessageBean {
 			HashMap<Integer, UserInfoData> mapEx = (HashMap<Integer, UserInfoData>)session.getAttribute("mapUsr");
 			if(mapEx.size() > 0) {
 				//there are currently users in the list, so return true
+				log.debug("there are currently users in the list for an existing session, so return true");
 				return true;
 			}
-			else
+			else {
+				log.debug("currently no users in existing session, return false");
 				return false;
+			}
 		}
-		else 
+		else {
+			log.debug("New session, so no users in list, return false");
 			return false; //since for a new user session, the user list would be empty
+		}
 			
 		
 	}
@@ -150,22 +211,27 @@ public class provideUserService extends loadMessageBean {
 		HttpSession session= request.getSession();
 		HashMap<Integer, UserInfoData> mapEx = (HashMap<Integer, UserInfoData>)session.getAttribute("mapUsr");
 		
-		if(!delList.isEmpty()) {
-			for(String s : delList) {
-				if(s!= null && !s.trim().equalsIgnoreCase(""))
-					mapEx.remove(Integer.parseInt(s));
-			}		
+		try {
+			if(!delList.isEmpty()) {
+				for(String s : delList) {
+					if(s!= null && !s.trim().equalsIgnoreCase(""))
+						mapEx.remove(Integer.parseInt(s));
+				}		
+				
+			}
 			
+			//Now update the session object
+			session.setAttribute("mapUsr", mapEx);
 		}
-		
-		//Now update the session object
-		session.setAttribute("mapUsr", mapEx);
+		catch (Exception ex) {
+			log.error("Exception while deleting users from list " +ex) ;
+		}
 		
 		
 	}
 	
 	public boolean updateUser(UserInfoData updatedData, HttpServletRequest request) throws Exception {
-		System.out.println("inside update user function");
+		log.debug("inside update user function");
 		
 				
 		if(updatedData != null) {
@@ -179,6 +245,7 @@ public class provideUserService extends loadMessageBean {
 				session.setAttribute("mapUsr", mapEx);
 			}
 			catch(Exception ex) {
+				log.error("exception while updateUser()" + ex);
 				return false;
 			}
 			
