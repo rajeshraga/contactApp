@@ -12,7 +12,7 @@
 </script>
 </head>
 <body>
-<s:form action="welcome" >
+<s:form action="login" >
 <s:textfield id="uid" label="Login Id" key="username" />
 <s:password id="pwd" label="Password" key="password"/>
 <s:submit value="Submit"/>
