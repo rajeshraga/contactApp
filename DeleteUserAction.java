@@ -5,17 +5,20 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.struts2.ServletActionContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import com.contactApp.beans.provideUserService;
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.util.ValueStack;
 
 public class DeleteUserAction {
+	private static Logger log;
+	static {
+		log = LogManager.getLogger(DeleteUserAction.class.getName());
+	}
 	
 	private String uid;
 	private Map<Integer,String> userchkList;
@@ -35,15 +38,21 @@ public class DeleteUserAction {
 	public String execute() {
 		System.out.println("here we have delete request");
 		
-		WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(ServletActionContext.getServletContext());		
-		provideUserService UsrService = (provideUserService)context.getBean("provideUserService");
-		
-		HttpServletRequest request = ServletActionContext.getRequest();		
-		String val = request.getParameter("allVals");
-		List<String> delList = Arrays.asList(val.split(","));
-		
-		UsrService.deleteUsersFromList(ServletActionContext.getRequest(), delList);
-		
+		try {
+			WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(ServletActionContext.getServletContext());		
+			provideUserService UsrService = (provideUserService)context.getBean("provideUserService");
+			
+			HttpServletRequest request = ServletActionContext.getRequest();		
+			String val = request.getParameter("allVals");
+			List<String> delList = Arrays.asList(val.split(","));
+			
+			UsrService.deleteUsersFromList(ServletActionContext.getRequest(), delList);
+		}
+		catch(Exception ex) {
+			log.error("Error while deleting the user record " +ex);
+	
+			return "failure";
+		}
 	
 		return "success";
 	}
