@@ -5,15 +5,22 @@
    "http://struts.apache.org/dtds/struts-2.3.dtd">
 <struts>
 	
- 
+ 	
 	<package name="default" extends="struts-default, json-default">
 		<global-results>
 			<result name="failure">/content/Error.jsp</result>
+			<result name="input">/Login.jsp</result>
 		</global-results>
+		
+		<action name="login" class="com.contactApp.action.LoginAction">
+			<result type="redirectAction">
+				<param name="actionName">welcome</param>    
+			</result>			
+		</action>
 		
 		<action name="welcome" class="com.contactApp.action.WelcomeUserAction">
 			<result name="showadduser">content/welcome_user.jsp</result>
-			<result name="showuserlist">content/users_list.jsp</result>
+			<result name="showuserlist">content/users_list.jsp</result>			
 		</action>
 		
 		<action name="adduser" class="com.contactApp.action.AddUserAction">
@@ -24,7 +31,10 @@
 		<action name="delete" class="com.contactApp.action.DeleteUserAction">
 		    <result name="success">content/users_list.jsp</result>		
 		</action>
-	
+		
+		<action name="update" class="com.contactApp.action.UpdateUserAction">
+		    <result name="success">content/update_user.jsp</result>		
+		</action>	
 	
 		
 	</package>	
