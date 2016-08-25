@@ -8,6 +8,8 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.struts2.ServletActionContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -16,6 +18,10 @@ import com.contactApp.beans.provideUserService;
 
 public class AddUserAction {
 	
+	private static Logger log;
+	static {
+		log = LogManager.getLogger(AddUserAction.class.getName());
+	}
 	private static String FALSE = "false";
 	private static String TRUE = "true";
 	
@@ -30,6 +36,14 @@ public class AddUserAction {
 	private String zip;
 	private String flag;
 	private List<UserInfoData> userdata;
+	private String updateExistingUser;
+	public String getUpdateExistingUser() {
+		return updateExistingUser;
+	}
+
+	public void setUpdateExistingUser(String updateExistingUser) {
+		this.updateExistingUser = updateExistingUser;
+	}
 	public String getFlag() {
 		return flag;
 	}
@@ -111,29 +125,44 @@ public class AddUserAction {
 			HttpSession session = request.getSession(false);
 			System.out.println(getFname() + ' ' + getFlag());
 			HashMap<Integer, UserInfoData> mapEx  = null;
-				
+			
 			UserInfoData usrData = getUserObj(getUid(),getFname(),getLname(),getDob(),getSsn(),getStreet(),getCity(),getState(),getZip());
 			WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(ServletActionContext.getServletContext());
 			provideUserService UsrService = (provideUserService)context.getBean("provideUserService");
 			
-			try {
-				UsrService.addUserInfo(usrData, request);
+			//check if the request is to update an existing entry 
+			if(getUpdateExistingUser() != null && getUpdateExistingUser().equalsIgnoreCase("yes")){
+				try {	
+					UsrService.updateUser(usrData, request);
+				}
+				catch(Exception ex) {
+					log.error("exception while updating the User Info " +ex);
+					return "failure";
+				}
 			}
-			catch(Exception ex) {
-				System.out.println("exception while adding the User Info " +ex);
-				return "failure";
+			else {
+				try {
+					UsrService.addUserInfo(usrData, request);
+				}
+				catch(Exception ex) {
+					log.error("exception while adding the User Info " +ex);
+					return "failure";
+				}
 			}
-			if(session != null)
+			
+			if(session != null) {
 				mapEx = (HashMap<Integer, UserInfoData>)session.getAttribute("mapUsr");
+				log.debug("existing session inside AddUserAction" );
+			}
 			
 			if(mapEx == null) {
-				System.out.println("After adding the User Info, map is null, this should never be the case");
+				log.error("After adding the User Info, map is null, this should never be the case" );
 			}
 			else {
 				Collection<UserInfoData> collUsr = (Collection<UserInfoData>) mapEx.values();
 				List<UserInfoData> list = new ArrayList<>(collUsr);
 				setUserdata(list);
-				System.out.println("Checking the list size here " +userdata.size());
+					log.debug("Checking the list size here " +userdata.size());
 			}
 			return "success";
 	}	
@@ -164,18 +193,23 @@ public class AddUserAction {
 	
 	public UserInfoData getUserObj(String uid, String fname, String lname, String dob, String ssn, String street, String city,
 			String state, String zip) {
-		
 		UserInfoData usrObj = new UserInfoData();
-		usrObj.setUid(uid);
-		usrObj.setFname(fname);
-		usrObj.setLname(lname);
-		usrObj.setDob(dob);
-		usrObj.setSsn(ssn);
-		usrObj.setStreet(street);
-		usrObj.setCity(city);
-		usrObj.setState(state);
-		usrObj.setZip(zip);
 		
+		try {
+		
+			usrObj.setUid(uid);
+			usrObj.setFname(fname);
+			usrObj.setLname(lname);
+			usrObj.setDob(dob);
+			usrObj.setSsn(ssn);
+			usrObj.setStreet(street);
+			usrObj.setCity(city);
+			usrObj.setState(state);
+			usrObj.setZip(zip);
+		}
+		catch(Exception ex) {
+			log.error("exception in getUserObj() "+ex); 
+		}
 		return usrObj;
 	}
 
